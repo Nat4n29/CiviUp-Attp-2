@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28be7db96f170804796d4e10c1e473e2, type: 3}
+  m_Name: State_SA
+  m_EditorClassIdentifier: Assembly-CSharp::StateData
+  id: 1
+  stateName: StateA
+  country: {fileID: 0}
+  capital: {fileID: 11400000, guid: f4aa3a54b6177a24188d3bf53b7bf354, type: 2}
+  provinces:
+  - {fileID: 11400000, guid: f4aa3a54b6177a24188d3bf53b7bf354, type: 2}
+  - {fileID: 11400000, guid: 4300311fced4b354fb2339ab52b2cf93, type: 2}
+  - {fileID: 11400000, guid: 0be680abbb32a0a44b37094e2c9f397b, type: 2}

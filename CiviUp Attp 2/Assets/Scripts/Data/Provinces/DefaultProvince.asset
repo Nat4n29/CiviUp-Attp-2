@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b360dae48af13f645a170f98f68d0f27, type: 3}
-  m_Name: Province_PD
+  m_Name: DefaultProvince
   m_EditorClassIdentifier: Assembly-CSharp::ProvinceData
-  id: 4
-  provinceName: Province D
-  state: {fileID: 11400000, guid: 5ae7108f735c0144cb69e3b11f754f27, type: 2}
-  country: {fileID: 11400000, guid: 5ac2a6bd37d63bd4ca505164a43f853e, type: 2}
+  id: 0
+  provinceName: Default_Province
+  state: {fileID: 0}
+  country: {fileID: 0}
   maxConstructions: 5
   constructions: 

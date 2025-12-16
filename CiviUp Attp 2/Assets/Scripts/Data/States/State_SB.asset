@@ -16,6 +16,4 @@ MonoBehaviour:
   stateName: StateB
   country: {fileID: 0}
   capital: {fileID: 11400000, guid: 455448ba00fbbba4b92b56ea4c83869f, type: 2}
-  provinces:
-  - {fileID: 11400000, guid: 455448ba00fbbba4b92b56ea4c83869f, type: 2}
-  - {fileID: 11400000, guid: 193be9819f3b2f54bb4df221852cc589, type: 2}
+  provinces: []

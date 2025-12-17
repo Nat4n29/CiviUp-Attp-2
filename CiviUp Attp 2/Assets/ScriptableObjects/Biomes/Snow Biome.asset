@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d1ed1f74798e0e8408e22cc417f84386, type: 3}
-  m_Name: Plains Biome
+  m_Name: Snow Biome
   m_EditorClassIdentifier: Assembly-CSharp::BiomeData
-  id: 1
-  biomeName: Plains_Biome
-  sprite: {fileID: -9102900633203978818, guid: 68eed5eca20d3164083439d1ce0284e7, type: 3}
+  id: 6
+  biomeName: Snow_Biome
+  sprite: {fileID: 6234176133674011997, guid: bd231cfee4f5fe54194b40c20f113bf2, type: 3}
   isWater: 0
   isPassable: 1
   minElevation: 0
-  maxElevation: 0.5
+  maxElevation: 1
   minTemperature: 0
-  maxTemperature: 1
-  priority: 0
+  maxTemperature: 0.25
+  priority: 8

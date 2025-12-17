@@ -17,3 +17,8 @@ MonoBehaviour:
   sprite: {fileID: 5492864483853897598, guid: fc9bdc956ee7ca3459d7ca4fc1fdb05a, type: 3}
   isWater: 0
   isPassable: 1
+  minElevation: 0.2
+  maxElevation: 0.7
+  minTemperature: 0.3
+  maxTemperature: 0.7
+  priority: 5

@@ -10,6 +10,9 @@ public class HexMapGenerator : MonoBehaviour
     public GameObject hexPrefab;
     public BiomeDatabase biomeDatabase;
 
+    [Header("Map Output")]
+    public Transform mapRoot;
+
     [Header("Seeds")]
     public int seed = 0;
 
@@ -22,8 +25,15 @@ public class HexMapGenerator : MonoBehaviour
     [Header("Elevation")]
     public float elevationScale = 0.08f;
 
+    [Header("Mountains")]
+    public float mountainScale = 0.02f;
+    public float mountainInfluence = 0.6f;
+
     private float hexWidth;
     private float hexHeight;
+
+    [Header("Temperature")]
+    public AnimationCurve temperatureByLatitude;
 
     private void Start()
     {
@@ -32,6 +42,12 @@ public class HexMapGenerator : MonoBehaviour
 
         Random.InitState(seed);
         biomeDatabase.Init();
+
+        if (mapRoot == null)
+        {
+        Debug.LogError("HexMapGenerator: mapRoot não definido");
+        return;
+        }
 
         CacheHexMetrics();
         Generate();
@@ -51,7 +67,7 @@ public class HexMapGenerator : MonoBehaviour
             for (int row = 0; row < height; row++)
             {
                 Vector2 pos = CalculateHexPosition(col, row);
-                GameObject hex = Instantiate(hexPrefab, pos, Quaternion.identity, transform);
+                GameObject hex = Instantiate(hexPrefab, pos, Quaternion.identity, mapRoot);
 
                 ProvinceView view = hex.GetComponent<ProvinceView>();
                 if (view == null) continue;
@@ -78,39 +94,67 @@ public class HexMapGenerator : MonoBehaviour
         if (continent < landThreshold)
             return biomeDatabase.GetWaterBiome();
 
-        float elevation = Mathf.PerlinNoise(
+        float baseElevation = Mathf.PerlinNoise(
             (col + seed + 1000) * elevationScale,
             (row + seed + 1000) * elevationScale
         );
 
-        float latitude = Mathf.Abs((row / (float)height) * 2f - 1f);
+        float mountainMask = Mathf.PerlinNoise(
+            (col + seed + 3000) * mountainScale,
+            (row + seed + 3000) * mountainScale
+        );
 
-        return ChooseLandBiome(elevation, latitude);
+        float elevation = Mathf.Lerp(
+            baseElevation,
+            1f,
+            mountainMask * mountainInfluence
+        );
+
+
+        float temperature = GetTemperature(row);
+
+        return ChooseLandBiome(elevation, temperature);
     }
 
-    private BiomeData ChooseLandBiome(float elevation, float latitude)
+    private BiomeData ChooseLandBiome(float elevation, float temperature)
     {
-        if (elevation > 0.85f)
-            return biomeDatabase.GetById(4); // Montanha Alta
+        BiomeData chosen = null;
+        int highestPriority = int.MinValue;
 
-        if (elevation > 0.7f)
-            return biomeDatabase.GetById(3); // Montanha Baixa
+        foreach (var biome in biomeDatabase.biomes)
+        {
+            if (biome.isWater)
+                continue;
 
-        if (latitude < 0.25f && elevation < 0.5f)
-            return biomeDatabase.GetById(2); // Deserto
+            if (elevation < biome.minElevation ||
+                elevation > biome.maxElevation)
+                continue;
 
-        if (elevation < 0.45f)
-            return biomeDatabase.GetById(0); // Planície
+            if (temperature < biome.minTemperature ||
+                temperature > biome.maxTemperature)
+                continue;
 
-        return biomeDatabase.GetById(1); // Floresta
+            if (biome.priority > highestPriority)
+            {
+                highestPriority = biome.priority;
+                chosen = biome;
+            }
+        }
+
+        return chosen != null
+            ? chosen
+            : biomeDatabase.GetRandomLandBiome();
     }
 
     private float GetOceanFalloff(int col, int row)
     {
-        float x = col / (float)width * 2f - 1f;
-        float y = row / (float)height * 2f - 1f;
-        return Mathf.Max(Mathf.Abs(x), Mathf.Abs(y));
+        float x = col / (float)(width - 1) * 2f - 1f;
+        float y = row / (float)(height - 1) * 2f - 1f;
+
+        float distance = Mathf.Sqrt(x * x + y * y); // 0 centro, ~1.4 cantos
+        return Mathf.SmoothStep(0f, 1f, distance);
     }
+
 
     private bool IsBorder(int col, int row)
     {
@@ -130,4 +174,11 @@ public class HexMapGenerator : MonoBehaviour
 
         return new Vector2(x, y);
     }
+
+    private float GetTemperature(int row)
+    {
+        float latitude01 = row / (float)(height - 1);
+        return temperatureByLatitude.Evaluate(latitude01);
+    }
+
 }

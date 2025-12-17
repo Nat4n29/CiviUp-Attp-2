@@ -1137,9 +1137,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 337057960b5d7f24aaf78c965d630d4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HexMapGenerator
-  width: 20
-  height: 15
+  width: 60
+  height: 45
   hexPrefab: {fileID: 4997946933898542143, guid: 94468ffdea45fc34ebeccb9612fa09a4, type: 3}
+  biomeDatabase: {fileID: 11400000, guid: 271c4bcb22272384bbf795d531d4db2b, type: 2}
+  seed: 41840
+  continentScale: 0.03
+  landThreshold: 0.45
+  oceanFalloffStrength: 0
+  borderWaterSize: 2
+  elevationScale: 0.08
 --- !u!4 &282979252
 Transform:
   m_ObjectHideFlags: 0

@@ -1,39 +1,55 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class HexMapGenerator : MonoBehaviour
 {
     [Header("Map Size")]
-    public int width = 80;
-    public int height = 45;
+    public int width = 160;
+    public int height = 90;
 
     [Header("Prefabs & Data")]
     public GameObject hexPrefab;
     public BiomeDatabase biomeDatabase;
+    public ReliefDatabase reliefDatabase;
 
     [Header("Map Output")]
     public Transform mapRoot;
 
-    [Header("Seeds")]
+    [Header("Seed")]
     public int seed = 0;
 
     [Header("Continents")]
-    public float continentScale = 0.03f;
-    public float landThreshold = 0.45f;
-    public float oceanFalloffStrength = 0.6f;
-    public int borderWaterSize = 2;
+    public float continentScale = 0.07f;
+    public float landThreshold = 0.35f;
+    public float oceanFalloffStrength = 0.4f;
+    public int borderWaterSize = 3;
 
     [Header("Elevation")]
     public float elevationScale = 0.08f;
+    public float mountainLow = 0.6f;
+    public float mountainHigh = 0.8f;
 
     [Header("Mountains")]
     public float mountainScale = 0.02f;
-    public float mountainInfluence = 0.6f;
+    public float mountainInfluence = 0.35f;
 
-    private float hexWidth;
-    private float hexHeight;
+    [Header("Biome Base Noise")]
+    public float biomeNoiseScale = 0.05f;
 
     [Header("Temperature")]
     public AnimationCurve temperatureByLatitude;
+
+    [Header("Temperature Noise")]
+    public float temperatureNoiseScale = 0.05f;
+    public float temperatureNoiseStrength = 0.15f;
+
+    private float[,] heightMap;
+    private BiomeData[,] baseBiomeMap;
+    private BiomeData[,] finalBiomeMap;
+    private ProvinceView[,] viewMap;
+
+    private float hexWidth;
+    private float hexHeight;
 
     private void Start()
     {
@@ -42,12 +58,6 @@ public class HexMapGenerator : MonoBehaviour
 
         Random.InitState(seed);
         biomeDatabase.Init();
-
-        if (mapRoot == null)
-        {
-        Debug.LogError("HexMapGenerator: mapRoot não definido");
-        return;
-        }
 
         CacheHexMetrics();
         Generate();
@@ -62,123 +72,207 @@ public class HexMapGenerator : MonoBehaviour
 
     private void Generate()
     {
-        for (int col = 0; col < width; col++)
+        heightMap     = new float[width, height];
+        baseBiomeMap  = new BiomeData[width, height];
+        finalBiomeMap = new BiomeData[width, height];
+        viewMap       = new ProvinceView[width, height];
+
+        for (int x = 0; x < width; x++)
         {
-            for (int row = 0; row < height; row++)
+            for (int y = 0; y < height; y++)
             {
-                Vector2 pos = CalculateHexPosition(col, row);
+                Vector2 pos = CalculateHexPosition(x, y);
                 GameObject hex = Instantiate(hexPrefab, pos, Quaternion.identity, mapRoot);
 
                 ProvinceView view = hex.GetComponent<ProvinceView>();
-                if (view == null) continue;
+                viewMap[x, y] = view;
 
-                BiomeData biome = GenerateBiome(col, row);
-                view.SetBiome(biome);
+                heightMap[x, y] = CalculateElevation(x, y);
+                baseBiomeMap[x, y] = GenerateBaseBiome(x, y);
             }
         }
+
+        ComposeFinalBiomes();
     }
 
-    private BiomeData GenerateBiome(int col, int row)
+    // =========================
+    // WORLD PHYSICS
+    // =========================
+
+    private float CalculateElevation(int x, int y)
     {
-        if (IsBorder(col, row))
-            return biomeDatabase.GetWaterBiome();
+        if (IsBorder(x, y))
+            return 0f;
 
         float continent = Mathf.PerlinNoise(
-            (col + seed) * continentScale,
-            (row + seed) * continentScale
+            (x + seed) * continentScale,
+            (y + seed) * continentScale
         );
 
-        float falloff = GetOceanFalloff(col, row);
-        continent -= falloff * oceanFalloffStrength;
+        continent -= GetOceanFalloff(x, y) * oceanFalloffStrength;
 
         if (continent < landThreshold)
-            return biomeDatabase.GetWaterBiome();
+            return 0f;
 
         float baseElevation = Mathf.PerlinNoise(
-            (col + seed + 1000) * elevationScale,
-            (row + seed + 1000) * elevationScale
+            (x + seed + 1000) * elevationScale,
+            (y + seed + 1000) * elevationScale
         );
 
         float mountainMask = Mathf.PerlinNoise(
-            (col + seed + 3000) * mountainScale,
-            (row + seed + 3000) * mountainScale
+            (x + seed + 3000) * mountainScale,
+            (y + seed + 3000) * mountainScale
         );
 
-        float elevation = Mathf.Lerp(
+        float mountainFactor = Mathf.SmoothStep(0.6f, 0.8f, mountainMask);
+
+        return Mathf.Lerp(
             baseElevation,
-            1f,
-            mountainMask * mountainInfluence
+            baseElevation * 0.5f + 0.5f,
+            mountainFactor * mountainInfluence
         );
-
-
-        float temperature = GetTemperature(row);
-
-        return ChooseLandBiome(elevation, temperature);
     }
 
-    private BiomeData ChooseLandBiome(float elevation, float temperature)
+    // =========================
+    // BIOME BASE (LOWLAND ONLY)
+    // =========================
+
+    private BiomeData GenerateBaseBiome(int x, int y)
     {
+        float temperature = GetTemperature(x, y);
+
+        float biomeNoise = Mathf.PerlinNoise(
+            (x + seed + 7000) * biomeNoiseScale,
+            (y + seed + 7000) * biomeNoiseScale
+        );
+
         BiomeData chosen = null;
-        int highestPriority = int.MinValue;
+        int bestPriority = int.MinValue;
 
         foreach (var biome in biomeDatabase.biomes)
         {
             if (biome.isWater)
                 continue;
 
-            if (elevation < biome.minElevation ||
-                elevation > biome.maxElevation)
-                continue;
-
             if (temperature < biome.minTemperature ||
                 temperature > biome.maxTemperature)
                 continue;
 
-            if (biome.priority > highestPriority)
+            if (biome.priority > bestPriority)
             {
-                highestPriority = biome.priority;
+                bestPriority = biome.priority;
                 chosen = biome;
             }
         }
 
-        return chosen != null
-            ? chosen
-            : biomeDatabase.GetRandomLandBiome();
+        return chosen;
     }
 
-    private float GetOceanFalloff(int col, int row)
-    {
-        float x = col / (float)(width - 1) * 2f - 1f;
-        float y = row / (float)(height - 1) * 2f - 1f;
+    // =========================
+    // FINAL COMPOSITION
+    // =========================
 
-        float distance = Mathf.Sqrt(x * x + y * y); // 0 centro, ~1.4 cantos
-        return Mathf.SmoothStep(0f, 1f, distance);
+    private void ComposeFinalBiomes()
+    {
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                float height = heightMap[x, y];
+                float temperature = GetTemperature(x, y);
+
+                if (height <= 0f)
+                {
+                    ApplyBiome(x, y, biomeDatabase.GetWaterBiome());
+                    continue;
+                }
+
+                ReliefData relief = reliefDatabase.GetRelief(height, temperature);
+
+                if (relief != null && relief.overridesBiome)
+                {
+                    viewMap[x, y].SetBiomeSprite(relief.sprite);
+                    continue;
+                }
+
+                ApplyBiome(x, y, baseBiomeMap[x, y]);
+            }
+        }
     }
 
+    // =========================
+    // HELPERS
+    // =========================
 
-    private bool IsBorder(int col, int row)
+    private float GetTemperature(int x, int y)
     {
-        return col < borderWaterSize ||
-               row < borderWaterSize ||
-               col >= width - borderWaterSize ||
-               row >= height - borderWaterSize;
+        float latitude01 = y / (float)(height - 1);
+        float baseTemp = temperatureByLatitude.Evaluate(latitude01);
+
+        float noise = Mathf.PerlinNoise(
+            (x + seed + 5000) * temperatureNoiseScale,
+            (y + seed + 5000) * temperatureNoiseScale
+        );
+
+        return Mathf.Clamp01(
+            baseTemp + (noise - 0.5f) * temperatureNoiseStrength
+        );
+    }
+
+    private void ApplyBiome(int x, int y, BiomeData biome)
+    {
+        finalBiomeMap[x, y] = biome;
+        viewMap[x, y].SetBiome(biome);
+    }
+
+    private float GetOceanFalloff(int x, int y)
+    {
+        float nx = x / (float)(width - 1) * 2f - 1f;
+        float ny = y / (float)(height - 1) * 2f - 1f;
+        return Mathf.SmoothStep(0f, 1f, Mathf.Sqrt(nx * nx + ny * ny));
+    }
+
+    private bool IsBorder(int x, int y)
+    {
+        return x < borderWaterSize || y < borderWaterSize ||
+               x >= width - borderWaterSize || y >= height - borderWaterSize;
     }
 
     private Vector2 CalculateHexPosition(float col, float row)
     {
         float x = col * hexWidth * 0.985f;
         float y = row * (hexHeight * 0.753f);
-
-        if (row % 2 == 1)
+        if ((int)row % 2 == 1)
             x += hexWidth / 2.04f;
-
         return new Vector2(x, y);
     }
 
-    private float GetTemperature(int row)
+    public void RegenerateMap(bool isRandomSeed)
     {
-        float latitude01 = row / (float)(height - 1);
-        return temperatureByLatitude.Evaluate(latitude01);
+        if (mapRoot == null)
+        {
+            Debug.LogError("HexMapGenerator: mapRoot não definido");
+            return;
+        }
+
+        // Limpa o mapa atual
+        for (int i = mapRoot.childCount - 1; i >= 0; i--)
+        {
+            Destroy(mapRoot.GetChild(i).gameObject);
+        }
+
+        if(isRandomSeed == true)
+        {
+            seed = Random.Range(0, 999999);
+        }
+        Random.InitState(seed);
+
+        // Regenera estruturas
+        Generate();
+
+        // Suavização final
+        /*for (int i = 0; i < 2; i++)
+            SmoothBiomes();*/
     }
 
 }

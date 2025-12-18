@@ -28,4 +28,9 @@ public class ProvinceView : MonoBehaviour
     {
         SelectionManager.Instance.SelectProvince(data);
     }
+
+    public void SetBiomeSprite(Sprite sprite)
+    {
+        spriteRenderer.sprite = sprite;
+    }
 }

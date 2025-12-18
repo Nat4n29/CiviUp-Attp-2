@@ -9,16 +9,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d1ed1f74798e0e8408e22cc417f84386, type: 3}
-  m_Name: Snow Biome
-  m_EditorClassIdentifier: Assembly-CSharp::BiomeData
-  id: 6
-  biomeName: Snow_Biome
+  m_Script: {fileID: 11500000, guid: b9b0d40d7d25f25448f871fde5af9e42, type: 3}
+  m_Name: Low Terrain
+  m_EditorClassIdentifier: Assembly-CSharp::ReliefData
+  reliefName: Low_Terrain
   sprite: {fileID: 6234176133674011997, guid: bd231cfee4f5fe54194b40c20f113bf2, type: 3}
-  isWater: 0
-  isPassable: 1
-  minElevation: 0
-  maxElevation: 1
+  minHeight: 0
+  maxHeight: 0.6
   minTemperature: 0
-  maxTemperature: 0.25
-  priority: 8
+  maxTemperature: 1
+  overridesBiome: 0
+  priority: 0

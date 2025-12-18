@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d1ed1f74798e0e8408e22cc417f84386, type: 3}
-  m_Name: Low Montains Biome
+  m_Name: Plains Biome
   m_EditorClassIdentifier: Assembly-CSharp::BiomeData
-  id: 4
-  biomeName: Low_Montains_Biome
-  sprite: {fileID: 3783503933563688119, guid: 8898d58f2af526946b93ba884bb57e29, type: 3}
+  id: 1
+  biomeName: Plains_Biome
+  sprite: {fileID: -9102900633203978818, guid: 68eed5eca20d3164083439d1ce0284e7, type: 3}
   isWater: 0
   isPassable: 1
-  minElevation: 0.75
-  maxElevation: 0.8
+  minElevation: 0
+  maxElevation: 1
   minTemperature: 0
   maxTemperature: 1
-  priority: 20
+  priority: 0

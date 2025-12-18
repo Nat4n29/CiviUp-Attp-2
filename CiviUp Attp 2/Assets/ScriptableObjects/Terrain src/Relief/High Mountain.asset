@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9b0d40d7d25f25448f871fde5af9e42, type: 3}
+  m_Name: High Mountain
+  m_EditorClassIdentifier: Assembly-CSharp::ReliefData
+  reliefName: High_Mountain
+  sprite: {fileID: -3833461725355955885, guid: 46bc0749da062204dbf80906c5ff34a8, type: 3}
+  minHeight: 0.8
+  maxHeight: 1
+  minTemperature: 0
+  maxTemperature: 1
+  overridesBiome: 1
+  priority: 30

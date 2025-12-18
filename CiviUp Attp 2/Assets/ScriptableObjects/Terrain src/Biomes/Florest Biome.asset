@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d1ed1f74798e0e8408e22cc417f84386, type: 3}
-  m_Name: High Montains Biome
+  m_Name: Florest Biome
   m_EditorClassIdentifier: Assembly-CSharp::BiomeData
-  id: 5
-  biomeName: High_Montains_Biome
-  sprite: {fileID: -3833461725355955885, guid: 46bc0749da062204dbf80906c5ff34a8, type: 3}
+  id: 2
+  biomeName: Florest_Biome
+  sprite: {fileID: 5492864483853897598, guid: fc9bdc956ee7ca3459d7ca4fc1fdb05a, type: 3}
   isWater: 0
   isPassable: 1
-  minElevation: 0.85
+  minElevation: 0
   maxElevation: 1
-  minTemperature: 0
-  maxTemperature: 1
-  priority: 20
+  minTemperature: 0.3
+  maxTemperature: 0.7
+  priority: 5

@@ -7,6 +7,9 @@ public class HexMapGenerator : MonoBehaviour
     public int width = 160;
     public int height = 90;
 
+    [Header("Camera")]
+    public MapCameraController mapCamera;
+
     [Header("Prefabs & Data")]
     public GameObject hexPrefab;
     public BiomeDatabase biomeDatabase;
@@ -47,6 +50,7 @@ public class HexMapGenerator : MonoBehaviour
     private BiomeData[,] baseBiomeMap;
     private BiomeData[,] finalBiomeMap;
     private ProvinceView[,] viewMap;
+    private ProvinceData[,] provinceMap;
 
     private float hexWidth;
     private float hexHeight;
@@ -58,6 +62,12 @@ public class HexMapGenerator : MonoBehaviour
 
         Random.InitState(seed);
         biomeDatabase.Init();
+
+        if (mapCamera == null)
+        {
+            Debug.LogError("HexMapGenerator: mapCamera não definido");
+            return;
+        }
 
         CacheHexMetrics();
         Generate();
@@ -76,6 +86,7 @@ public class HexMapGenerator : MonoBehaviour
         baseBiomeMap  = new BiomeData[width, height];
         finalBiomeMap = new BiomeData[width, height];
         viewMap       = new ProvinceView[width, height];
+        provinceMap = new ProvinceData[width, height];
 
         for (int x = 0; x < width; x++)
         {
@@ -85,14 +96,33 @@ public class HexMapGenerator : MonoBehaviour
                 GameObject hex = Instantiate(hexPrefab, pos, Quaternion.identity, mapRoot);
 
                 ProvinceView view = hex.GetComponent<ProvinceView>();
+
+                if (view == null)
+                {
+                    Debug.LogError($"Hex prefab sem ProvinceView em {x},{y}");
+                    continue;
+                }
+
+                // CRIA ProvinceData EM RUNTIME
+                ProvinceData province = ScriptableObject.CreateInstance<ProvinceData>();
+                province.id = x * height + y;
+                province.provinceName = $"Province {x},{y}";
+                province.constructions = new List<ConstructionType>();
+
+                provinceMap[x, y] = province;
                 viewMap[x, y] = view;
 
+                // CALCULA MAPAS
                 heightMap[x, y] = CalculateElevation(x, y);
                 baseBiomeMap[x, y] = GenerateBaseBiome(x, y);
+
+                // INICIALIZA O VIEW (IMPORTANTE)
+                view.Init(province);
             }
         }
 
         ComposeFinalBiomes();
+        mapCamera.CacheMapBounds();
     }
 
     // =========================
@@ -221,6 +251,9 @@ public class HexMapGenerator : MonoBehaviour
 
     private void ApplyBiome(int x, int y, BiomeData biome)
     {
+        if (viewMap[x, y] == null)
+            return;
+
         finalBiomeMap[x, y] = biome;
         viewMap[x, y].SetBiome(biome);
     }
@@ -267,12 +300,15 @@ public class HexMapGenerator : MonoBehaviour
         }
         Random.InitState(seed);
 
-        // Regenera estruturas
         Generate();
+
+        mapCamera.CacheMapBounds();
 
         // Suavização final
         /*for (int i = 0; i < 2; i++)
             SmoothBiomes();*/
     }
 
+    public float HexWidth => hexWidth;
+    public float HexHeight => hexHeight;
 }

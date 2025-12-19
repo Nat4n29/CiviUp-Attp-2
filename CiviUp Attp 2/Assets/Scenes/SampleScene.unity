@@ -1137,8 +1137,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 337057960b5d7f24aaf78c965d630d4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HexMapGenerator
-  width: 160
-  height: 90
+  width: 240
+  height: 135
+  mapCamera: {fileID: 519420033}
   hexPrefab: {fileID: 4997946933898542143, guid: 94468ffdea45fc34ebeccb9612fa09a4, type: 3}
   biomeDatabase: {fileID: 11400000, guid: 271c4bcb22272384bbf795d531d4db2b, type: 2}
   reliefDatabase: {fileID: 11400000, guid: 5786f4c3adc8e38438d87a89babd8015, type: 2}
@@ -2405,6 +2406,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 519420032}
+  - component: {fileID: 519420033}
   - component: {fileID: 519420031}
   - component: {fileID: 519420029}
   - component: {fileID: 519420030}
@@ -2527,12 +2529,32 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 75, y: 43, z: -10}
+  m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &519420033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519420028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf95f375065181b498c26f15972ca360, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MapCameraController
+  mapRoot: {fileID: 1287787331}
+  mapGenerator: {fileID: 282979251}
+  dragSpeed: 1
+  smoothTime: 0.1
+  zoomSpeed: 1
+  zoomSmoothTime: 0.12
+  minZoom: 2
+  maxZoom: 50
 --- !u!1 &521410477
 GameObject:
   m_ObjectHideFlags: 0

@@ -24,8 +24,9 @@ public class HexMapGenerator : MonoBehaviour
     [Header("Continents")]
     public float continentScale = 0.07f;
     public float landThreshold = 0.35f;
-    public float oceanFalloffStrength = 0.4f;
     public int borderWaterSize = 3;
+    [Range(0.1f, 8f)]
+    public float borderSmoothness = 3f;
 
     [Header("Elevation")]
     public float elevationScale = 0.08f;
@@ -130,38 +131,46 @@ public class HexMapGenerator : MonoBehaviour
     // =========================
 
     private float CalculateElevation(int x, int y)
-    {
-        if (IsBorder(x, y))
-            return 0f;
+{
+    float continent = Mathf.PerlinNoise(
+        (x + seed) * continentScale,
+        (y + seed) * continentScale
+    );
 
-        float continent = Mathf.PerlinNoise(
-            (x + seed) * continentScale,
-            (y + seed) * continentScale
-        );
+    continent = Mathf.Clamp01(continent);
 
-        continent -= GetOceanFalloff(x, y) * oceanFalloffStrength;
+    float baseElevation = Mathf.PerlinNoise(
+        (x + seed + 1000) * elevationScale,
+        (y + seed + 1000) * elevationScale
+    );
 
-        if (continent < landThreshold)
-            return 0f;
+    float mountainMask = Mathf.PerlinNoise(
+        (x + seed + 3000) * mountainScale,
+        (y + seed + 3000) * mountainScale
+    );
 
-        float baseElevation = Mathf.PerlinNoise(
-            (x + seed + 1000) * elevationScale,
-            (y + seed + 1000) * elevationScale
-        );
+    float mountainFactor = Mathf.SmoothStep(
+        mountainLow,
+        mountainHigh,
+        mountainMask
+    );
 
-        float mountainMask = Mathf.PerlinNoise(
-            (x + seed + 3000) * mountainScale,
-            (y + seed + 3000) * mountainScale
-        );
+    float elevation = Mathf.Lerp(
+        baseElevation,
+        baseElevation * 0.5f + 0.5f,
+        mountainFactor * mountainInfluence
+    );
 
-        float mountainFactor = Mathf.SmoothStep(0.6f, 0.8f, mountainMask);
+    float continentMask = Mathf.InverseLerp(landThreshold, 1f, continent);
 
-        return Mathf.Lerp(
-            baseElevation,
-            baseElevation * 0.5f + 0.5f,
-            mountainFactor * mountainInfluence
-        );
-    }
+    elevation *= continentMask;
+
+    float borderFactor = GetBorderHeightFactor(x, y);
+    elevation *= borderFactor;
+
+    return Mathf.Clamp01(elevation);
+}
+
 
     // =========================
     // BIOME BASE (LOWLAND ONLY)
@@ -211,21 +220,19 @@ public class HexMapGenerator : MonoBehaviour
                 float height = heightMap[x, y];
                 float temperature = GetTemperature(x, y);
 
-                if (height <= 0f)
-                {
-                    ApplyBiome(x, y, biomeDatabase.GetWaterBiome());
-                    continue;
-                }
-
                 ReliefData relief = reliefDatabase.GetRelief(height, temperature);
 
-                if (relief != null && relief.overridesBiome)
+                // Aplica o sprite de relevo (água, montanha, etc)
+                if (relief != null)
                 {
                     viewMap[x, y].SetBiomeSprite(relief.sprite);
-                    continue;
                 }
 
-                ApplyBiome(x, y, baseBiomeMap[x, y]);
+                // Só aplica bioma se o relevo permitir
+                if (relief == null || relief.allowsBiome)
+                {
+                    ApplyBiome(x, y, baseBiomeMap[x, y]);
+                }
             }
         }
     }
@@ -258,17 +265,17 @@ public class HexMapGenerator : MonoBehaviour
         viewMap[x, y].SetBiome(biome);
     }
 
-    private float GetOceanFalloff(int x, int y)
+    private float GetBorderHeightFactor(int x, int y)
     {
-        float nx = x / (float)(width - 1) * 2f - 1f;
-        float ny = y / (float)(height - 1) * 2f - 1f;
-        return Mathf.SmoothStep(0f, 1f, Mathf.Sqrt(nx * nx + ny * ny));
-    }
+        int distX = Mathf.Min(x, width - 1 - x);
+        int distY = Mathf.Min(y, height - 1 - y);
+        int distToBorder = Mathf.Min(distX, distY);
 
-    private bool IsBorder(int x, int y)
-    {
-        return x < borderWaterSize || y < borderWaterSize ||
-               x >= width - borderWaterSize || y >= height - borderWaterSize;
+        if (distToBorder >= borderWaterSize)
+            return 1f;
+
+        float t = distToBorder / (float)borderWaterSize;
+        return Mathf.SmoothStep(0f, 1f, Mathf.Pow(t, borderSmoothness));
     }
 
     private Vector2 CalculateHexPosition(float col, float row)
@@ -276,7 +283,7 @@ public class HexMapGenerator : MonoBehaviour
         float x = col * hexWidth * 0.985f;
         float y = row * (hexHeight * 0.753f);
         if ((int)row % 2 == 1)
-            x += hexWidth / 2.04f;
+            x += hexWidth / 2.027f;
         return new Vector2(x, y);
     }
 

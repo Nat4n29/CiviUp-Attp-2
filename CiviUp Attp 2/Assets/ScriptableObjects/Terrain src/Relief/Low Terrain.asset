@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ReliefData
   reliefName: Low_Terrain
   sprite: {fileID: 6234176133674011997, guid: bd231cfee4f5fe54194b40c20f113bf2, type: 3}
-  minHeight: 0
-  maxHeight: 0.6
+  allowsBiome: 1
+  minHeight: 0.2
+  maxHeight: 0.5
   minTemperature: 0
   maxTemperature: 1
   overridesBiome: 0

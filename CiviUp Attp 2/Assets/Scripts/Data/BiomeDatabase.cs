@@ -25,8 +25,7 @@ public class BiomeDatabase : ScriptableObject
                 landBiomes.Add(biome);
         }
 
-        if (waterBiome == null)
-            Debug.LogError("BiomeDatabase: Nenhum bioma de agua definido");
+        //if (waterBiome == null)Debug.LogError("BiomeDatabase: Nenhum bioma de agua definido");
     }
 
     public BiomeData GetById(int id)

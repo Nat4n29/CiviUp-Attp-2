@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b9b0d40d7d25f25448f871fde5af9e42, type: 3}
-  m_Name: High Mountain
+  m_Name: Water 0
   m_EditorClassIdentifier: Assembly-CSharp::ReliefData
-  reliefName: High_Mountain
-  sprite: {fileID: -3833461725355955885, guid: 46bc0749da062204dbf80906c5ff34a8, type: 3}
+  reliefName: Water_0
+  sprite: {fileID: -1347461591, guid: fe62dbe08fad7614abb74730f45a8bca, type: 3}
   allowsBiome: 0
-  minHeight: 0.6
-  maxHeight: 1
+  minHeight: 0
+  maxHeight: 0.13
   minTemperature: 0
   maxTemperature: 1
   overridesBiome: 1
-  priority: 30
+  priority: 0

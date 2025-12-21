@@ -1137,23 +1137,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 337057960b5d7f24aaf78c965d630d4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HexMapGenerator
-  width: 240
+  width: 205
   height: 135
   mapCamera: {fileID: 519420033}
   hexPrefab: {fileID: 4997946933898542143, guid: 94468ffdea45fc34ebeccb9612fa09a4, type: 3}
   biomeDatabase: {fileID: 11400000, guid: 271c4bcb22272384bbf795d531d4db2b, type: 2}
   reliefDatabase: {fileID: 11400000, guid: 5786f4c3adc8e38438d87a89babd8015, type: 2}
   mapRoot: {fileID: 1287787331}
-  seed: 640909
-  continentScale: 0.07
-  landThreshold: 0.35
-  oceanFalloffStrength: 0.4
-  borderWaterSize: 3
-  elevationScale: 0.3
-  mountainLow: 0.7
-  mountainHigh: 0.8
+  seed: 673696
+  continentScale: 0.017
+  landThreshold: 0.3
+  borderWaterSize: 16
+  borderSmoothness: 1
+  elevationScale: 0.1
+  mountainLow: 0.6
+  mountainHigh: 1
   mountainScale: 0.02
-  mountainInfluence: 0.15
+  mountainInfluence: 0.25
   biomeNoiseScale: 0.05
   temperatureByLatitude:
     serializedVersion: 2
@@ -1188,8 +1188,8 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  temperatureNoiseScale: 0.15
-  temperatureNoiseStrength: 0.25
+  temperatureNoiseScale: 0.2
+  temperatureNoiseStrength: 0.15
 --- !u!4 &282979252
 Transform:
   m_ObjectHideFlags: 0
@@ -2504,7 +2504,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 41.61
+  orthographic size: 30
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -2554,7 +2554,7 @@ MonoBehaviour:
   zoomSpeed: 1
   zoomSmoothTime: 0.12
   minZoom: 2
-  maxZoom: 50
+  maxZoom: 63
 --- !u!1 &521410477
 GameObject:
   m_ObjectHideFlags: 0

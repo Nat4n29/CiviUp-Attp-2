@@ -9,6 +9,9 @@ public class ReliefData : ScriptableObject
     [Header("Visual")]
     public Sprite sprite;
 
+    [Header("Biome Rules")]
+    public bool allowsBiome;
+
     [Header("Generation Rules")]
     [Range(0f, 1f)]
     public float minHeight;

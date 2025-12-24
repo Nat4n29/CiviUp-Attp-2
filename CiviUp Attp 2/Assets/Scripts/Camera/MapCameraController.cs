@@ -9,7 +9,6 @@ public class MapCameraController : MonoBehaviour
 
     [Header("Movement")]
     public float dragSpeed = 1f;
-    public float smoothTime = 0.15f;
 
     [Header("Zoom")]
     public float zoomSpeed = 5f;
@@ -17,21 +16,20 @@ public class MapCameraController : MonoBehaviour
     public float minZoom = 3f;
     public float maxZoom = 20f;
 
+    [Header("Wrap")]
+    public bool horizontalWrap = true;
+
     private Camera cam;
 
-    private Vector3 velocity;
     private Vector3 targetPosition;
-
     private float targetZoom;
     private float zoomVelocity;
 
+    private Vector3 dragAnchorWorld;
+
     private Vector2 minBounds;
     private Vector2 maxBounds;
-
-    private float hexHalfWidth;
-    private float hexHalfHeight;
-
-    private Vector3 lastMouseWorld;
+    private float mapWidthWorld;
 
     private void Awake()
     {
@@ -53,16 +51,11 @@ public class MapCameraController : MonoBehaviour
     {
         HandleDrag();
         HandleZoom();
+        HandleHorizontalWrap();
 
-        // IMPORTANTE: clamp APÓS atualizar targetZoom e targetPosition
         ClampTarget();
 
-        transform.position = Vector3.SmoothDamp(
-            transform.position,
-            targetPosition,
-            ref velocity,
-            smoothTime
-        );
+        transform.position = targetPosition;
 
         cam.orthographicSize = Mathf.SmoothDamp(
             cam.orthographicSize,
@@ -70,7 +63,6 @@ public class MapCameraController : MonoBehaviour
             ref zoomVelocity,
             zoomSmoothTime
         );
-
     }
 
     // =========================
@@ -79,21 +71,23 @@ public class MapCameraController : MonoBehaviour
 
     private void HandleDrag()
     {
-        if (!Input.GetMouseButton(2)) // botão do meio
+        if (!Input.GetMouseButton(2))
+        {
+            dragAnchorWorld = Vector3.zero;
             return;
+        }
 
         Vector3 mouseWorld = cam.ScreenToWorldPoint(Input.mousePosition);
         mouseWorld.z = 0f;
 
-        if (Input.GetMouseButtonDown(2))
+        if (dragAnchorWorld == Vector3.zero)
         {
-            lastMouseWorld = mouseWorld;
+            dragAnchorWorld = mouseWorld;
             return;
         }
 
-        Vector3 delta = lastMouseWorld - mouseWorld;
+        Vector3 delta = dragAnchorWorld - mouseWorld;
         targetPosition += delta * dragSpeed;
-        lastMouseWorld = mouseWorld;
     }
 
     private void HandleZoom()
@@ -102,27 +96,36 @@ public class MapCameraController : MonoBehaviour
         if (Mathf.Abs(scroll) < 0.01f)
             return;
 
-        // Posição do mouse ANTES do zoom
-        Vector3 mouseWorldBefore = cam.ScreenToWorldPoint(Input.mousePosition);
-        mouseWorldBefore.z = 0f;
-
-        // Atualiza zoom alvo
         targetZoom = Mathf.Clamp(
             targetZoom - scroll * zoomSpeed,
             minZoom,
             maxZoom
         );
-
-        // Simula o novo zoom para calcular offset
-        float zoomRatio = targetZoom / cam.orthographicSize;
-
-        Vector3 mouseWorldAfter = transform.position +
-            (mouseWorldBefore - transform.position) * zoomRatio;
-
-        // Ajusta posição alvo para manter o ponto sob o mouse
-        Vector3 delta = mouseWorldBefore - mouseWorldAfter;
-        targetPosition += delta;
     }
+
+    // =========================
+    // WRAP HORIZONTAL
+    // =========================
+
+    private void HandleHorizontalWrap()
+    {
+        if (!horizontalWrap)
+            return;
+
+        if (targetPosition.x < minBounds.x - mapWidthWorld * 0.5f)
+        {
+            targetPosition.x += mapWidthWorld;
+            transform.position += Vector3.right * mapWidthWorld;
+            dragAnchorWorld = Vector3.zero; // ← ESSENCIAL
+        }
+        else if (targetPosition.x > maxBounds.x + mapWidthWorld * 0.5f)
+        {
+            targetPosition.x -= mapWidthWorld;
+            transform.position += Vector3.left * mapWidthWorld;
+            dragAnchorWorld = Vector3.zero; // ← ESSENCIAL
+        }
+    }
+
 
     // =========================
     // BOUNDS
@@ -131,31 +134,25 @@ public class MapCameraController : MonoBehaviour
     public void CacheMapBounds()
     {
         if (mapGenerator == null || mapRoot == null)
-        {
-            Debug.LogError("MapCameraController: referências não definidas");
             return;
-        }
 
         float hexWidth = mapGenerator.HexWidth;
         float hexHeight = mapGenerator.HexHeight;
 
-        hexHalfWidth = hexWidth * 0.5f;
-        hexHalfHeight = hexHeight * 0.5f;
-
-        float mapWidthWorld =
+        mapWidthWorld =
             (mapGenerator.width - 1) * hexWidth * 0.985f + hexWidth;
 
         float mapHeightWorld =
             (mapGenerator.height - 1) * hexHeight * 0.753f + hexHeight;
 
         minBounds = new Vector2(
-            mapRoot.position.x + hexHalfWidth,
-            mapRoot.position.y + hexHalfHeight
+            mapRoot.position.x,
+            mapRoot.position.y + hexHeight * 0.5f
         );
 
         maxBounds = new Vector2(
-            mapRoot.position.x + mapWidthWorld - hexHalfWidth,
-            mapRoot.position.y + mapHeightWorld - hexHalfHeight
+            mapRoot.position.x + mapWidthWorld,
+            mapRoot.position.y + mapHeightWorld - hexHeight * 0.5f
         );
     }
 
@@ -164,11 +161,14 @@ public class MapCameraController : MonoBehaviour
         float camHalfHeight = targetZoom;
         float camHalfWidth = camHalfHeight * cam.aspect;
 
-        targetPosition.x = Mathf.Clamp(
-            targetPosition.x,
-            minBounds.x + camHalfWidth,
-            maxBounds.x - camHalfWidth
-        );
+        if (!horizontalWrap)
+        {
+            targetPosition.x = Mathf.Clamp(
+                targetPosition.x,
+                minBounds.x + camHalfWidth,
+                maxBounds.x - camHalfWidth
+            );
+        }
 
         targetPosition.y = Mathf.Clamp(
             targetPosition.y,

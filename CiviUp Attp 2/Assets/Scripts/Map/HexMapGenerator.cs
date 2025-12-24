@@ -18,6 +18,9 @@ public class HexMapGenerator : MonoBehaviour
     [Header("Map Output")]
     public Transform mapRoot;
 
+    [Header("Wrap Visual")]
+    public MapWrapVisual wrapVisual;
+
     [Header("Seed")]
     public int seed = 0;
 
@@ -64,9 +67,9 @@ public class HexMapGenerator : MonoBehaviour
         Random.InitState(seed);
         biomeDatabase.Init();
 
-        if (mapCamera == null)
+        if (mapCamera == null || mapRoot == null)
         {
-            Debug.LogError("HexMapGenerator: mapCamera não definido");
+            Debug.LogError("HexMapGenerator: referências não definidas");
             return;
         }
 
@@ -83,10 +86,10 @@ public class HexMapGenerator : MonoBehaviour
 
     private void Generate()
     {
-        heightMap     = new float[width, height];
-        baseBiomeMap  = new BiomeData[width, height];
+        heightMap = new float[width, height];
+        baseBiomeMap = new BiomeData[width, height];
         finalBiomeMap = new BiomeData[width, height];
-        viewMap       = new ProvinceView[width, height];
+        viewMap = new ProvinceView[width, height];
         provinceMap = new ProvinceData[width, height];
 
         for (int x = 0; x < width; x++)
@@ -97,14 +100,12 @@ public class HexMapGenerator : MonoBehaviour
                 GameObject hex = Instantiate(hexPrefab, pos, Quaternion.identity, mapRoot);
 
                 ProvinceView view = hex.GetComponent<ProvinceView>();
-
                 if (view == null)
                 {
                     Debug.LogError($"Hex prefab sem ProvinceView em {x},{y}");
                     continue;
                 }
 
-                // CRIA ProvinceData EM RUNTIME
                 ProvinceData province = ScriptableObject.CreateInstance<ProvinceData>();
                 province.id = x * height + y;
                 province.provinceName = $"Province {x},{y}";
@@ -113,17 +114,20 @@ public class HexMapGenerator : MonoBehaviour
                 provinceMap[x, y] = province;
                 viewMap[x, y] = view;
 
-                // CALCULA MAPAS
                 heightMap[x, y] = CalculateElevation(x, y);
                 baseBiomeMap[x, y] = GenerateBaseBiome(x, y);
 
-                // INICIALIZA O VIEW (IMPORTANTE)
                 view.Init(province);
             }
         }
 
         ComposeFinalBiomes();
         mapCamera.CacheMapBounds();
+
+        if (wrapVisual != null)
+        {
+            wrapVisual.BuildVisualWrap();
+        }
     }
 
     // =========================
@@ -131,59 +135,49 @@ public class HexMapGenerator : MonoBehaviour
     // =========================
 
     private float CalculateElevation(int x, int y)
-{
-    float continent = Mathf.PerlinNoise(
-        (x + seed) * continentScale,
-        (y + seed) * continentScale
-    );
+    {
+        float continent = Mathf.PerlinNoise(
+            (x + seed) * continentScale,
+            (y + seed) * continentScale
+        );
 
-    continent = Mathf.Clamp01(continent);
+        float baseElevation = Mathf.PerlinNoise(
+            (x + seed + 1000) * elevationScale,
+            (y + seed + 1000) * elevationScale
+        );
 
-    float baseElevation = Mathf.PerlinNoise(
-        (x + seed + 1000) * elevationScale,
-        (y + seed + 1000) * elevationScale
-    );
+        float mountainMask = Mathf.PerlinNoise(
+            (x + seed + 3000) * mountainScale,
+            (y + seed + 3000) * mountainScale
+        );
 
-    float mountainMask = Mathf.PerlinNoise(
-        (x + seed + 3000) * mountainScale,
-        (y + seed + 3000) * mountainScale
-    );
+        float mountainFactor = Mathf.SmoothStep(
+            mountainLow,
+            mountainHigh,
+            mountainMask
+        );
 
-    float mountainFactor = Mathf.SmoothStep(
-        mountainLow,
-        mountainHigh,
-        mountainMask
-    );
+        float elevation = Mathf.Lerp(
+            baseElevation,
+            baseElevation * 0.5f + 0.5f,
+            mountainFactor * mountainInfluence
+        );
 
-    float elevation = Mathf.Lerp(
-        baseElevation,
-        baseElevation * 0.5f + 0.5f,
-        mountainFactor * mountainInfluence
-    );
+        float continentMask = Mathf.InverseLerp(landThreshold, 1f, continent);
+        elevation *= continentMask;
 
-    float continentMask = Mathf.InverseLerp(landThreshold, 1f, continent);
+        elevation *= GetBorderHeightFactor(x, y);
 
-    elevation *= continentMask;
-
-    float borderFactor = GetBorderHeightFactor(x, y);
-    elevation *= borderFactor;
-
-    return Mathf.Clamp01(elevation);
-}
-
+        return Mathf.Clamp01(elevation);
+    }
 
     // =========================
-    // BIOME BASE (LOWLAND ONLY)
+    // BIOME BASE (LOWLAND)
     // =========================
 
     private BiomeData GenerateBaseBiome(int x, int y)
     {
         float temperature = GetTemperature(x, y);
-
-        float biomeNoise = Mathf.PerlinNoise(
-            (x + seed + 7000) * biomeNoiseScale,
-            (y + seed + 7000) * biomeNoiseScale
-        );
 
         BiomeData chosen = null;
         int bestPriority = int.MinValue;
@@ -222,17 +216,11 @@ public class HexMapGenerator : MonoBehaviour
 
                 ReliefData relief = reliefDatabase.GetRelief(height, temperature);
 
-                // Aplica o sprite de relevo (água, montanha, etc)
                 if (relief != null)
-                {
                     viewMap[x, y].SetBiomeSprite(relief.sprite);
-                }
 
-                // Só aplica bioma se o relevo permitir
                 if (relief == null || relief.allowsBiome)
-                {
                     ApplyBiome(x, y, baseBiomeMap[x, y]);
-                }
             }
         }
     }
@@ -258,7 +246,7 @@ public class HexMapGenerator : MonoBehaviour
 
     private void ApplyBiome(int x, int y, BiomeData biome)
     {
-        if (viewMap[x, y] == null)
+        if (viewMap[x, y] == null || biome == null)
             return;
 
         finalBiomeMap[x, y] = biome;
@@ -282,38 +270,29 @@ public class HexMapGenerator : MonoBehaviour
     {
         float x = col * hexWidth * 0.985f;
         float y = row * (hexHeight * 0.753f);
+
         if ((int)row % 2 == 1)
             x += hexWidth / 2.027f;
+
         return new Vector2(x, y);
     }
 
-    public void RegenerateMap(bool isRandomSeed)
+    public void RegenerateMap(bool randomSeed)
     {
-        if (mapRoot == null)
-        {
-            Debug.LogError("HexMapGenerator: mapRoot não definido");
-            return;
-        }
-
-        // Limpa o mapa atual
         for (int i = mapRoot.childCount - 1; i >= 0; i--)
-        {
             Destroy(mapRoot.GetChild(i).gameObject);
-        }
 
-        if(isRandomSeed == true)
-        {
+        if (randomSeed)
             seed = Random.Range(0, 999999);
-        }
+
         Random.InitState(seed);
-
         Generate();
-
         mapCamera.CacheMapBounds();
 
-        // Suavização final
-        /*for (int i = 0; i < 2; i++)
-            SmoothBiomes();*/
+        if (wrapVisual != null)
+        {
+            wrapVisual.BuildVisualWrap();
+        }
     }
 
     public float HexWidth => hexWidth;

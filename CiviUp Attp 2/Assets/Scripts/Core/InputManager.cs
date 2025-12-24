@@ -6,12 +6,15 @@ public class InputManager : MonoBehaviour
     [SerializeField]
     private Camera mainCamera;
 
+    private HexMapGenerator mapGenerator;
+
     private void Awake()
     {
         mainCamera = Camera.main;
+        mapGenerator = FindFirstObjectByType<HexMapGenerator>();
 
-    if (mainCamera == null)
-        Debug.LogError("InputManager: MainCamera NÃO encontrada");
+        if (mainCamera == null)
+            Debug.LogError("InputManager: MainCamera NÃO encontrada");
     }
 
     private void Update()
@@ -23,34 +26,23 @@ public class InputManager : MonoBehaviour
 
     private void HandleClick()
     {
-        Debug.Log("HandleClick chamado");
+        Vector2 mouseWorld =
+            mainCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
 
-        Vector2 mouseWorldPos =
-        mainCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
-
-        Collider2D col = Physics2D.OverlapPoint(
-        mouseWorldPos,
-        LayerMask.GetMask("Province")
-        );
-
-        if (col == null)
-        {
-            Debug.Log("OverlapPoint NÃO encontrou collider");
-            return;
-        }
-
-        Debug.Log("Collider encontrado: " + col.name);
-
-        ProvinceView view = col.GetComponent<ProvinceView>();
+        ProvinceView view = FindProvinceByWorldPosition(mouseWorld);
 
         if (view == null)
-        {
-        Debug.Log("Collider NÃO tem ProvinceView");
-        return;
-        }
+            return;
 
-        Debug.Log("ProvinceView encontrada: " + view.name);
         view.OnSelected();
+    }
+
+    private ProvinceView FindProvinceByWorldPosition(Vector2 worldPos)
+    {
+        if (mapGenerator == null)
+            return null;
+
+        return mapGenerator.GetProvinceByWorldPosition(worldPos);
     }
 
     /*private bool IsPlayerProvince(ProvinceView view)
@@ -58,3 +50,4 @@ public class InputManager : MonoBehaviour
         return view.data.country == GameManager.Instance.currentCountry;
     }*/
 }
+

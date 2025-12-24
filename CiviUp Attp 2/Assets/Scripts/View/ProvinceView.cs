@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class ProvinceView : MonoBehaviour
 {
-    public ProvinceData data;
+    public ProvinceData Data { get; private set; }
     public BiomeData biome;
 
     private SpriteRenderer spriteRenderer;
@@ -14,7 +14,7 @@ public class ProvinceView : MonoBehaviour
 
     public void Init(ProvinceData province)
     {
-        data = province;
+        Data = province;
     }
 
     public void SetBiome(BiomeData biome)
@@ -36,7 +36,7 @@ public class ProvinceView : MonoBehaviour
 
     public void OnSelected()
     {
-        if (data == null)
+        if (Data == null)
         {
             Debug.LogError($"ProvinceView {name} sem ProvinceData");
             return;
@@ -48,6 +48,9 @@ public class ProvinceView : MonoBehaviour
             return;
         }
 
-        SelectionManager.Instance.SelectProvince(data);
+        Debug.Log($"ProvinceView.OnSelected: {Data?.provinceName}");
+
+        SelectionManager.Instance.SelectProvince(Data);
     }
 }
+

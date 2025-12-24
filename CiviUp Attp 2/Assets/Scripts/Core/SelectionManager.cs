@@ -4,22 +4,31 @@ public class SelectionManager : MonoBehaviour
 {
     public static SelectionManager Instance;
 
-    public ProvinceData selectedProvince;
+    public ProvinceData SelectedProvince { get; private set; }
+
+    public delegate void ProvinceSelected(ProvinceData province);
+    public event ProvinceSelected OnProvinceSelected;
 
     private void Awake()
     {
-        if (Instance != null && Instance != this)
+        if (Instance != null)
         {
             Destroy(gameObject);
             return;
         }
-
         Instance = this;
     }
 
     public void SelectProvince(ProvinceData province)
     {
-        selectedProvince = province;
-        Debug.Log($"Selected province: {province.provinceName}");
+        Debug.Log(">>> SelectionManager.SelectProvince() CHAMADO");
+
+        SelectedProvince = province;
+        OnProvinceSelected?.Invoke(province);
+
+        Debug.Log($"Selected province ID: {province.id}");
+
+        FindFirstObjectByType<ProvinceInfoPanel>()?.SendMessage("ShowProvince", province);
     }
 }
+

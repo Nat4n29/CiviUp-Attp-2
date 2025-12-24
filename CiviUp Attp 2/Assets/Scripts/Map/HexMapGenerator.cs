@@ -211,19 +211,29 @@ public class HexMapGenerator : MonoBehaviour
         {
             for (int y = 0; y < height; y++)
             {
+                ProvinceView view = viewMap[x, y];
+                ProvinceData province = view.Data;
+
                 float height = heightMap[x, y];
                 float temperature = GetTemperature(x, y);
 
                 ReliefData relief = reliefDatabase.GetRelief(height, temperature);
+                province.relief = relief;
 
                 if (relief != null)
-                    viewMap[x, y].SetBiomeSprite(relief.sprite);
+                    view.SetBiomeSprite(relief.sprite);
 
                 if (relief == null || relief.allowsBiome)
-                    ApplyBiome(x, y, baseBiomeMap[x, y]);
+                {
+                    province.biome = baseBiomeMap[x, y];
+                    view.SetBiome(baseBiomeMap[x, y]);
+                }
+
+                province.isCoastal = IsCoastal(x, y);
             }
         }
     }
+
 
     // =========================
     // HELPERS
@@ -295,6 +305,51 @@ public class HexMapGenerator : MonoBehaviour
         }
     }
 
+    private bool IsCoastal(int x, int y)
+    {
+        if (heightMap[x, y] <= 0f)
+            return false;
+
+        for (int dx = -1; dx <= 1; dx++)
+        {
+            for (int dy = -1; dy <= 1; dy++)
+            {
+                int nx = x + dx;
+                int ny = y + dy;
+
+                if (nx < 0 || ny < 0 || nx >= width || ny >= height)
+                    continue;
+
+                if (heightMap[nx, ny] <= 0f)
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    public ProvinceView GetProvinceByWorldPosition(Vector2 worldPos)
+    {
+        // Converte posição do mundo para posição RELATIVA ao mapa principal
+        Vector2 local = worldPos - (Vector2)mapRoot.position;
+
+        float mapWidth = (width - 1) * hexWidth * 0.985f + hexWidth;
+
+        // WRAP horizontal
+        local.x = Mathf.Repeat(local.x, mapWidth);
+
+        // Converte posição local em grid aproximado
+        int col = Mathf.RoundToInt(local.x / (hexWidth * 0.985f));
+        int row = Mathf.RoundToInt(local.y / (hexHeight * 0.753f));
+
+        if (col < 0 || col >= width || row < 0 || row >= height)
+            return null;
+
+        return viewMap[col, row];
+    }
+
+
     public float HexWidth => hexWidth;
     public float HexHeight => hexHeight;
 }
+

@@ -1,0 +1,19 @@
+fileFormatVersion: 2
+guid: f1af912d2cc9c2044a2fad53a7ac85f5
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - root: {instanceID: 0}
+  - provinceName: {instanceID: 0}
+  - provinceId: {instanceID: 0}
+  - biomeText: {instanceID: 0}
+  - reliefText: {instanceID: 0}
+  - coastText: {instanceID: 0}
+  - stateText: {instanceID: 0}
+  - countryText: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

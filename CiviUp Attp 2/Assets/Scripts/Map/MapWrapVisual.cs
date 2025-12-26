@@ -16,15 +16,12 @@ public class MapWrapVisual : MonoBehaviour
         ClearClones();
 
         if (mapRoot == null || generator == null)
-        {
-            Debug.LogError("MapWrapVisual: referências não definidas");
             return;
-        }
 
         float hexWidth = generator.HexWidth;
 
         mapWidthWorld =
-            (generator.width - 1) * hexWidth * 0.9847f + hexWidth;
+            (generator.width - 1) * hexWidth * 0.985f + hexWidth;
 
         leftClone = Instantiate(mapRoot, transform);
         rightClone = Instantiate(mapRoot, transform);
@@ -36,8 +33,8 @@ public class MapWrapVisual : MonoBehaviour
         leftClone.position = mapRoot.position + Vector3.left * mapWidthWorld;
         rightClone.position = mapRoot.position + Vector3.right * mapWidthWorld;
 
-        DisableLogic(leftClone);
-        DisableLogic(rightClone);
+        LinkCloneData(leftClone);
+        LinkCloneData(rightClone);
     }
 
     private void ClearClones()
@@ -46,11 +43,14 @@ public class MapWrapVisual : MonoBehaviour
         if (rightClone != null) Destroy(rightClone.gameObject);
     }
 
-    private void DisableLogic(Transform clone)
+    private void LinkCloneData(Transform cloneRoot)
     {
-        foreach (var view in clone.GetComponentsInChildren<ProvinceView>())
+        ProvinceView[] originalViews = mapRoot.GetComponentsInChildren<ProvinceView>();
+        ProvinceView[] cloneViews = cloneRoot.GetComponentsInChildren<ProvinceView>();
+
+        for (int i = 0; i < cloneViews.Length; i++)
         {
-            view.enabled = false;
+            cloneViews[i].Init(originalViews[i].Data);
         }
     }
 }

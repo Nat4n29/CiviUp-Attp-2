@@ -5,12 +5,10 @@ public class InputManager : MonoBehaviour
 {
     [SerializeField] private Camera mainCamera;
 
-    private HexMapGenerator mapGenerator;
-
     private void Awake()
     {
-        mainCamera = Camera.main;
-        mapGenerator = FindFirstObjectByType<HexMapGenerator>();
+        if (mainCamera == null)
+            mainCamera = Camera.main;
     }
 
     private void Update()
@@ -19,17 +17,32 @@ public class InputManager : MonoBehaviour
             return;
 
         if (Mouse.current.leftButton.wasPressedThisFrame)
-            HandleClick();
+            HandleLeftClick();
+
+        if (Mouse.current.rightButton.wasPressedThisFrame)
+            HandleRightClick();
     }
 
-    private void HandleClick()
+    private void HandleLeftClick()
     {
         Vector2 mouseWorld =
             mainCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
 
-        ProvinceView view = mapGenerator?.GetProvinceByWorldPosition(mouseWorld);
+        RaycastHit2D hit = Physics2D.Raycast(mouseWorld, Vector2.zero);
 
-        if (view != null)
-            view.OnSelected();
+        if (!hit)
+            return;
+
+        ProvinceView view = hit.collider.GetComponent<ProvinceView>();
+        if (view == null)
+            return;
+
+        view.OnSelected();
+    }
+
+    private void HandleRightClick()
+    {
+        if (SelectionManager.Instance != null)
+            SelectionManager.Instance.ClearSelection();
     }
 }

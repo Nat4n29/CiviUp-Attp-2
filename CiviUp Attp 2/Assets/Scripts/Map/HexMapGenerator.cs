@@ -79,7 +79,23 @@ public class HexMapGenerator : MonoBehaviour
 
     private void CacheHexMetrics()
     {
-        SpriteRenderer sr = hexPrefab.GetComponent<SpriteRenderer>();
+        if (hexPrefab == null)
+        {
+            Debug.LogError("HexMapGenerator: hexPrefab não definido");
+            return;
+        }
+
+        SpriteRenderer sr = hexPrefab.GetComponentInChildren<SpriteRenderer>();
+
+        if (sr == null)
+        {
+            Debug.LogError(
+                "HexMapGenerator: Nenhum SpriteRenderer encontrado no prefab. " +
+                "Verifique se existe um BaseRenderer com SpriteRenderer."
+            );
+            return;
+        }
+
         hexWidth = sr.bounds.size.x;
         hexHeight = sr.bounds.size.y;
     }
@@ -118,6 +134,7 @@ public class HexMapGenerator : MonoBehaviour
                 baseBiomeMap[x, y] = GenerateBaseBiome(x, y);
 
                 view.Init(province);
+                province.view = view;
             }
         }
 
@@ -221,7 +238,7 @@ public class HexMapGenerator : MonoBehaviour
                 province.relief = relief;
 
                 if (relief != null)
-                    view.SetBiomeSprite(relief.sprite);
+                    view.SetBaseSprite(relief.sprite);
 
                 if (relief == null || relief.allowsBiome)
                 {
@@ -346,6 +363,23 @@ public class HexMapGenerator : MonoBehaviour
             return null;
 
         return viewMap[col, row];
+    }
+
+    public ProvinceView GetViewByProvince(ProvinceData province)
+    {
+        if (province == null)
+            return null;
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                if (provinceMap[x, y] == province)
+                    return viewMap[x, y];
+            }
+        }
+
+        return null;
     }
 
 

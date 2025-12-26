@@ -21,5 +21,8 @@ public class ProvinceData : ScriptableObject
     [Range(1, 5)]
     public int maxConstructions = 5;
     public List<ConstructionType> constructions = new();
+
+    [HideInInspector]
+    public ProvinceView view;
 }
 

@@ -13,9 +13,9 @@ TagManager:
   - Water
   - UI
   - WrapTrigger
-  - 
-  - 
-  - 
+  - MapBase
+  - MapOverlay
+  - ProvinceInteract
   - 
   - 
   - 
@@ -41,6 +41,9 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Overlay
+    uniqueID: 3112811249
     locked: 0
   m_RenderingLayers:
   - Default

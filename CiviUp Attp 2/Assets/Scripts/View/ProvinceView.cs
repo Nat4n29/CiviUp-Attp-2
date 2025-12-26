@@ -1,9 +1,10 @@
 using UnityEngine;
 
+[RequireComponent(typeof(SpriteRenderer))]
 public class ProvinceView : MonoBehaviour
 {
     public ProvinceData Data { get; private set; }
-    public BiomeData biome;
+    public BiomeData Biome { get; private set; }
 
     private SpriteRenderer spriteRenderer;
 
@@ -20,37 +21,25 @@ public class ProvinceView : MonoBehaviour
     public void SetBiome(BiomeData biome)
     {
         if (biome == null)
-        {
-            Debug.LogError($"SetBiome chamado com NULL em {name}");
             return;
-        }
 
-        this.biome = biome;
+        Biome = biome;
         spriteRenderer.sprite = biome.sprite;
     }
 
     public void SetBiomeSprite(Sprite sprite)
     {
+        if (sprite == null)
+            return;
+
         spriteRenderer.sprite = sprite;
     }
 
     public void OnSelected()
     {
-        if (Data == null)
-        {
-            Debug.LogError($"ProvinceView {name} sem ProvinceData");
+        if (Data == null || SelectionManager.Instance == null)
             return;
-        }
-
-        if (SelectionManager.Instance == null)
-        {
-            Debug.LogError("SelectionManager.Instance é NULL");
-            return;
-        }
-
-        Debug.Log($"ProvinceView.OnSelected: {Data?.provinceName}");
 
         SelectionManager.Instance.SelectProvince(Data);
     }
 }
-

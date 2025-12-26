@@ -16,19 +16,16 @@ public class SelectionManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+
         Instance = this;
     }
 
     public void SelectProvince(ProvinceData province)
     {
-        Debug.Log(">>> SelectionManager.SelectProvince() CHAMADO");
+        if (province == null)
+            return;
 
         SelectedProvince = province;
         OnProvinceSelected?.Invoke(province);
-
-        Debug.Log($"Selected province ID: {province.id}");
-
-        FindFirstObjectByType<ProvinceInfoPanel>()?.SendMessage("ShowProvince", province);
     }
 }
-

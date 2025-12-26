@@ -3,8 +3,7 @@ using UnityEngine.InputSystem;
 
 public class InputManager : MonoBehaviour
 {
-    [SerializeField]
-    private Camera mainCamera;
+    [SerializeField] private Camera mainCamera;
 
     private HexMapGenerator mapGenerator;
 
@@ -12,16 +11,15 @@ public class InputManager : MonoBehaviour
     {
         mainCamera = Camera.main;
         mapGenerator = FindFirstObjectByType<HexMapGenerator>();
-
-        if (mainCamera == null)
-            Debug.LogError("InputManager: MainCamera NÃO encontrada");
     }
 
     private void Update()
     {
-        if (Mouse.current == null) return;
+        if (Mouse.current == null)
+            return;
 
-        if (Mouse.current.leftButton.wasPressedThisFrame) HandleClick();
+        if (Mouse.current.leftButton.wasPressedThisFrame)
+            HandleClick();
     }
 
     private void HandleClick()
@@ -29,25 +27,9 @@ public class InputManager : MonoBehaviour
         Vector2 mouseWorld =
             mainCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
 
-        ProvinceView view = FindProvinceByWorldPosition(mouseWorld);
+        ProvinceView view = mapGenerator?.GetProvinceByWorldPosition(mouseWorld);
 
-        if (view == null)
-            return;
-
-        view.OnSelected();
+        if (view != null)
+            view.OnSelected();
     }
-
-    private ProvinceView FindProvinceByWorldPosition(Vector2 worldPos)
-    {
-        if (mapGenerator == null)
-            return null;
-
-        return mapGenerator.GetProvinceByWorldPosition(worldPos);
-    }
-
-    /*private bool IsPlayerProvince(ProvinceView view)
-    {
-        return view.data.country == GameManager.Instance.currentCountry;
-    }*/
 }
-

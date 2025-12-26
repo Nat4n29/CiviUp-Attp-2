@@ -2,14 +2,11 @@ using UnityEngine;
 
 public class ProvinceView : MonoBehaviour
 {
+    public ProvinceData Data { get; private set; }
+
     [Header("Renderers")]
     [SerializeField] private SpriteRenderer baseRenderer;
     [SerializeField] private SpriteRenderer overlayRenderer;
-
-    [Header("Overlay Settings")]
-    [SerializeField] private Sprite selectionSprite;
-
-    public ProvinceData Data { get; private set; }
 
     private void Awake()
     {
@@ -20,77 +17,37 @@ public class ProvinceView : MonoBehaviour
     public void Init(ProvinceData province)
     {
         Data = province;
+        ProvinceViewRegistry.Register(this);
     }
 
-    // =========================
-    // BASE MAP
-    // =========================
-
-    public void SetBiome(BiomeData biome)
+    private void OnDestroy()
     {
-        if (biome == null || baseRenderer == null)
-            return;
-
-        baseRenderer.sprite = biome.sprite;
+        ProvinceViewRegistry.Unregister(this);
     }
-
-    public void SetBaseSprite(Sprite sprite)
-    {
-        if (baseRenderer == null)
-            return;
-
-        baseRenderer.sprite = sprite;
-    }
-
-    // =========================
-    // OVERLAY API (UNIFICADA)
-    // =========================
 
     public void SetSelected(bool selected)
     {
-        if (overlayRenderer == null)
-            return;
-
-        if (selected)
-        {
-            overlayRenderer.sprite = selectionSprite;
-            overlayRenderer.enabled = true;
-        }
-        else
-        {
-            ClearOverlay();
-        }
+        if (overlayRenderer != null)
+            overlayRenderer.enabled = selected;
     }
 
-    public void SetOverlay(Sprite sprite, Color color)
+    public void SetBiome(BiomeData biome)
     {
-        if (overlayRenderer == null)
-            return;
-
-        overlayRenderer.sprite = sprite;
-        overlayRenderer.color = color;
-        overlayRenderer.enabled = true;
+        if (baseRenderer != null && biome != null)
+            baseRenderer.sprite = biome.sprite;
     }
 
-    public void ClearOverlay()
+    public void SetBiomeSprite(Sprite sprite)
     {
-        if (overlayRenderer == null)
-            return;
-
-        overlayRenderer.enabled = false;
-        overlayRenderer.sprite = null;
+        if (baseRenderer != null)
+            baseRenderer.sprite = sprite;
     }
-
-    // =========================
-    // INPUT CALLBACK
-    // =========================
 
     public void OnSelected()
     {
         if (Data == null || SelectionManager.Instance == null)
             return;
 
-        SelectionManager.Instance.SelectProvince(Data, this);
+        SelectionManager.Instance.SelectProvince(Data);
     }
-
 }

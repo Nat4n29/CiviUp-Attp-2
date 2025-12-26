@@ -5,7 +5,6 @@ public class SelectionManager : MonoBehaviour
     public static SelectionManager Instance;
 
     public ProvinceData SelectedProvince { get; private set; }
-    private ProvinceView selectedView;
 
     public delegate void ProvinceSelected(ProvinceData province);
     public event ProvinceSelected OnProvinceSelected;
@@ -20,25 +19,23 @@ public class SelectionManager : MonoBehaviour
         Instance = this;
     }
 
-    public void SelectProvince(ProvinceData province, ProvinceView view)
+    public void SelectProvince(ProvinceData province)
     {
-        // Remove seleção anterior
         ClearSelection();
-
         SelectedProvince = province;
-        selectedView = view;
 
-        selectedView.SetSelected(true);
+        foreach (var view in ProvinceViewRegistry.GetViews(province))
+            view.SetSelected(true);
 
         OnProvinceSelected?.Invoke(province);
     }
 
     public void ClearSelection()
     {
-        if (selectedView != null)
+        if (SelectedProvince != null)
         {
-            selectedView.SetSelected(false);
-            selectedView = null;
+            foreach (var view in ProvinceViewRegistry.GetViews(SelectedProvince))
+                view.SetSelected(false);
         }
 
         SelectedProvince = null;

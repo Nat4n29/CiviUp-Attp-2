@@ -21,7 +21,7 @@ public class MapWrapVisual : MonoBehaviour
         float hexWidth = generator.HexWidth;
 
         mapWidthWorld =
-            (generator.width - 1) * hexWidth * 0.985f + hexWidth;
+            (generator.width - 1) * hexWidth * 0.9849f + hexWidth;
 
         leftClone = Instantiate(mapRoot, transform);
         rightClone = Instantiate(mapRoot, transform);

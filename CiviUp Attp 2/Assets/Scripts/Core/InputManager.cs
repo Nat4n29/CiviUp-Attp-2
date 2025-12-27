@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
 
 public class InputManager : MonoBehaviour
 {
@@ -16,12 +17,18 @@ public class InputManager : MonoBehaviour
         if (Mouse.current == null)
             return;
 
+        // BLOQUEIA input se o mouse estiver sobre UI
+        if (EventSystem.current != null &&
+            EventSystem.current.IsPointerOverGameObject())
+            return;
+
         if (Mouse.current.leftButton.wasPressedThisFrame)
             HandleLeftClick();
 
         if (Mouse.current.rightButton.wasPressedThisFrame)
             HandleRightClick();
     }
+
 
     private void HandleLeftClick()
     {

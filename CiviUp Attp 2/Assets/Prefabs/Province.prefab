@@ -49,7 +49,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ProvinceView
   baseRenderer: {fileID: 816181027285007783}
   overlayRenderer: {fileID: 8345304007945415}
-  selectionSprite: {fileID: 6234176133674011997, guid: bd231cfee4f5fe54194b40c20f113bf2, type: 3}
 --- !u!60 &1246111600917471043
 PolygonCollider2D:
   m_ObjectHideFlags: 0
@@ -213,7 +212,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8430559332893618223, guid: 94468ffdea45fc34ebeccb9612fa09a4, type: 3}
       propertyPath: m_SortingOrder
-      value: 100
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8430559332893618223, guid: 94468ffdea45fc34ebeccb9612fa09a4, type: 3}
       propertyPath: m_SortingLayerID
@@ -334,6 +333,14 @@ PrefabInstance:
     - target: {fileID: 8430559332893618223, guid: 94468ffdea45fc34ebeccb9612fa09a4, type: 3}
       propertyPath: m_Color.r
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8430559332893618223, guid: 94468ffdea45fc34ebeccb9612fa09a4, type: 3}
+      propertyPath: m_SortingLayer
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8430559332893618223, guid: 94468ffdea45fc34ebeccb9612fa09a4, type: 3}
+      propertyPath: m_SortingLayerID
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

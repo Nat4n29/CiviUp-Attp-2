@@ -39,11 +39,17 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: UI
+    uniqueID: 3652874733
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0
   - name: Overlay
     uniqueID: 3112811249
+    locked: 0
+  - name: MapBase
+    uniqueID: 751929889
     locked: 0
   m_RenderingLayers:
   - Default

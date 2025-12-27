@@ -11,6 +11,7 @@ public class ReliefData : ScriptableObject
 
     [Header("Biome Rules")]
     public bool allowsBiome;
+    public bool isWater;
 
     [Header("Generation Rules")]
     [Range(0f, 1f)]

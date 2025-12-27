@@ -187,10 +187,11 @@ public class HexMapGenerator : MonoBehaviour
                     province.biome = baseBiomeMap[x, y];
                     view.SetBiome(baseBiomeMap[x, y]);
                 }
-
-                province.isCoastal = IsCoastal(x, y);
             }
         }
+
+        // AGORA que tudo existe, calculamos a costa
+        CalculateCoasts();
     }
 
     private float GetTemperature(int x, int y)
@@ -240,26 +241,58 @@ public class HexMapGenerator : MonoBehaviour
         wrapVisual?.BuildVisualWrap();
     }
 
-
     private bool IsCoastal(int x, int y)
     {
-        if (heightMap[x, y] <= 0f)
+        ProvinceData province = provinceMap[x, y];
+
+        // Província de água nunca é costeira
+        if (IsWaterProvince(province))
             return false;
 
-        for (int dx = -1; dx <= 1; dx++)
-            for (int dy = -1; dy <= 1; dy++)
-            {
-                int nx = x + dx;
-                int ny = y + dy;
+        bool oddRow = (y & 1) == 1;
 
-                if (nx < 0 || ny < 0 || nx >= width || ny >= height)
-                    continue;
+        int[,] evenRowNeighbors =
+        {
+        { -1,  0 }, { 1,  0 },
+        { -1, -1 }, { 0, -1 },
+        { -1,  1 }, { 0,  1 }
+    };
 
-                if (heightMap[nx, ny] <= 0f)
-                    return true;
-            }
+        int[,] oddRowNeighbors =
+        {
+        { -1,  0 }, { 1,  0 },
+        {  0, -1 }, { 1, -1 },
+        {  0,  1 }, { 1,  1 }
+    };
+
+        int[,] neighbors = oddRow ? oddRowNeighbors : evenRowNeighbors;
+
+        for (int i = 0; i < neighbors.GetLength(0); i++)
+        {
+            int nx = WrapX(x + neighbors[i, 0]);
+            int ny = y + neighbors[i, 1];
+
+            if (ny < 0 || ny >= height)
+                continue;
+
+            ProvinceData neighbor = provinceMap[nx, ny];
+
+            if (IsWaterProvince(neighbor))
+                return true;
+        }
 
         return false;
+    }
+
+    private void CalculateCoasts()
+    {
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                provinceMap[x, y].isCoastal = IsCoastal(x, y);
+            }
+        }
     }
 
     public ProvinceView GetProvinceByWorldPosition(Vector2 worldPos)
@@ -286,6 +319,29 @@ public class HexMapGenerator : MonoBehaviour
             x += hexWidth / 2.027f;
 
         return new Vector2(x, y);
+    }
+
+    private bool IsWaterProvince(ProvinceData province)
+    {
+        if (province == null)
+            return false;
+
+        if (province.relief != null && province.relief.isWater)
+            return true;
+
+        if (province.biome != null && province.biome.isWater)
+            return true;
+
+        return false;
+    }
+
+    private int WrapX(int x)
+    {
+        if (x < 0)
+            return x + width;
+        if (x >= width)
+            return x - width;
+        return x;
     }
 
     public float HexWidth => hexWidth;

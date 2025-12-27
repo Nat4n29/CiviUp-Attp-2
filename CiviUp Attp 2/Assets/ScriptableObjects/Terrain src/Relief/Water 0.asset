@@ -20,4 +20,5 @@ MonoBehaviour:
   minTemperature: 0
   maxTemperature: 1
   overridesBiome: 1
+  isWater: 1
   priority: 0

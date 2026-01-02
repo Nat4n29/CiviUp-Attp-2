@@ -19,9 +19,10 @@ public class ProvinceView : MonoBehaviour
         Data = province;
         ProvinceViewRegistry.Register(this);
 
-        // Garante que o objeto esteja no layer correto
-        transform.SetParent(MapRenderManager.Instance.baseMapLayer, true);
+        if (MapRenderManager.Instance != null)
+            transform.SetParent(MapRenderManager.Instance.baseMapLayer, true);
     }
+
 
     private void OnDestroy()
     {

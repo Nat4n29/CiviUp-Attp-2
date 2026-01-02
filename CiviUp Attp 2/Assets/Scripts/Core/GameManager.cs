@@ -74,15 +74,20 @@ public class GameManager : MonoBehaviour
 
     private void ProcessState(StateData state)
     {
-        foreach (var province in state.provinces)
+        foreach (var city in state.cities)
         {
-            ProcessProvince(province);
+            ProcessCity(city);
         }
+    }
+
+    private void ProcessCity(CityData city)
+    {
+        // economia, produção, eventos
     }
 
     private void ProcessProvince(ProvinceData province)
     {
-        // economia, produção, eventos
+        
     }
 
     private void ProcessEndOfCountryTurn()

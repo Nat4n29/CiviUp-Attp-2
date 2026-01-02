@@ -1,14 +1,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Country")]
+[CreateAssetMenu(menuName = "Map/Country")]
 public class CountryData : ScriptableObject
 {
+    [Header("Identity")]
     public int id;
     public string countryName;
+    public Color countryColor;
 
-    public ProvinceData capitalProvince;
+    [Header("Geography")]
+    public CityData capitalCity;
 
+    [Header("Political")]
     public List<StateData> states = new();
-    public List<ProvinceData> provinces = new();
+    public List<CityData> cities = new();
 }

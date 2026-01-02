@@ -14,6 +14,7 @@ public class ProvinceData : ScriptableObject
     public bool isCoastal;
 
     [Header("Political")]
+    public CityData city;
     public StateData state;
     public CountryData country;
 
@@ -25,4 +26,3 @@ public class ProvinceData : ScriptableObject
     [HideInInspector]
     public ProvinceView view;
 }
-

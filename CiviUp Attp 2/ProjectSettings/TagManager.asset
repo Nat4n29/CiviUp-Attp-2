@@ -14,7 +14,7 @@ TagManager:
   - UI
   - WrapTrigger
   - MapBase
-  - MapOverlay
+  - Overlay
   - ProvinceInteract
   - 
   - 

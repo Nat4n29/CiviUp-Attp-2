@@ -18,6 +18,9 @@ public class ProvinceView : MonoBehaviour
     {
         Data = province;
         ProvinceViewRegistry.Register(this);
+
+        // Garante que o objeto esteja no layer correto
+        transform.SetParent(MapRenderManager.Instance.baseMapLayer, true);
     }
 
     private void OnDestroy()
@@ -25,11 +28,9 @@ public class ProvinceView : MonoBehaviour
         ProvinceViewRegistry.Unregister(this);
     }
 
-    public void SetSelected(bool selected)
-    {
-        if (overlayRenderer != null)
-            overlayRenderer.enabled = selected;
-    }
+    // =========================
+    // BASE MAP
+    // =========================
 
     public void SetBiome(BiomeData biome)
     {
@@ -41,6 +42,33 @@ public class ProvinceView : MonoBehaviour
     {
         if (baseRenderer != null)
             baseRenderer.sprite = sprite;
+    }
+
+    // =========================
+    // OVERLAYS
+    // =========================
+
+    public void SetSelected(bool selected)
+    {
+        if (overlayRenderer == null)
+            return;
+
+        overlayRenderer.enabled = selected;
+
+        if (selected)
+        {
+            transform.SetParent(
+                MapRenderManager.Instance.selectionOverlayLayer,
+                true
+            );
+        }
+        else
+        {
+            transform.SetParent(
+                MapRenderManager.Instance.baseMapLayer,
+                true
+            );
+        }
     }
 
     public void OnSelected()

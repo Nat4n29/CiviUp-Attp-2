@@ -3,35 +3,33 @@ using UnityEngine;
 public class MapWrapVisual : MonoBehaviour
 {
     [Header("References")]
-    public Transform mapRoot;
+    public Transform baseMapLayer;
     public HexMapGenerator generator;
 
     private Transform leftClone;
     private Transform rightClone;
-
     private float mapWidthWorld;
 
     public void BuildVisualWrap()
     {
         ClearClones();
 
-        if (mapRoot == null || generator == null)
+        if (baseMapLayer == null || generator == null)
             return;
 
         float hexWidth = generator.HexWidth;
 
         mapWidthWorld =
-            (generator.width - 1) * hexWidth * 0.9849f + hexWidth;
+            (generator.width - 1) * hexWidth * 0.985f + hexWidth;
 
-        leftClone = Instantiate(mapRoot, transform);
-        rightClone = Instantiate(mapRoot, transform);
+        leftClone = Instantiate(baseMapLayer, transform);
+        rightClone = Instantiate(baseMapLayer, transform);
 
         leftClone.name = "Map_Left";
         rightClone.name = "Map_Right";
-        mapRoot.name = "Map_Main";
 
-        leftClone.position = mapRoot.position + Vector3.left * mapWidthWorld;
-        rightClone.position = mapRoot.position + Vector3.right * mapWidthWorld;
+        leftClone.position = baseMapLayer.position + Vector3.left * mapWidthWorld;
+        rightClone.position = baseMapLayer.position + Vector3.right * mapWidthWorld;
 
         LinkCloneData(leftClone);
         LinkCloneData(rightClone);
@@ -45,8 +43,11 @@ public class MapWrapVisual : MonoBehaviour
 
     private void LinkCloneData(Transform cloneRoot)
     {
-        ProvinceView[] originalViews = mapRoot.GetComponentsInChildren<ProvinceView>();
-        ProvinceView[] cloneViews = cloneRoot.GetComponentsInChildren<ProvinceView>();
+        ProvinceView[] originalViews =
+            baseMapLayer.GetComponentsInChildren<ProvinceView>();
+
+        ProvinceView[] cloneViews =
+            cloneRoot.GetComponentsInChildren<ProvinceView>();
 
         for (int i = 0; i < cloneViews.Length; i++)
         {
